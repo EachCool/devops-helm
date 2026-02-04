@@ -1,0 +1,70 @@
+# ==========================================
+# GitLab Minikube 生产模拟补丁配置
+# ==========================================
+
+global:
+  # 1. 基础访问配置
+  hosts:
+    domain: 192.168.49.2.nip.io # 确保这是你的 minikube ip
+    https: false                  # 禁用 HTTPS，简化本地模拟
+  edition: ce                     # 指定使用社区版
+  
+  # 2. Ingress 配置
+  ingress:
+    configureCertmanager: false   # 禁用证书管理器
+    tls:
+      enabled: false              # 禁用 TLS
+
+  kas:
+    enabled: false
+  registry:
+    enabled: false
+  pages:
+    enabled: false
+
+# 3. 禁用内置 Nginx Ingress (使用 Minikube 自带的 Addon)
+nginx-ingress: &nginx-ingress
+  enabled: false
+
+# 4. 禁用高耗能非核心组件
+installCertmanager: false
+
+prometheus:
+  install: false                  # 监控极其耗费内存，建议关闭
+gitlab-runner:
+  install: false                  # 初始部署建议关闭，等 Web 跑通后再手动开启
+
+# 6. 核心组件资源最小化
+gitlab:
+  webservice:
+    minReplicas: 1
+    maxReplicas: 1
+    resources:
+      requests:
+        cpu: 1
+        memory: 2Gi    # 仅代码管理，1Gi 足够了
+  sidekiq:
+    minReplicas: 1
+    maxReplicas: 1
+    resources:
+      requests:
+        cpu: 1
+        memory: 2Gi
+  gitaly:
+    resources:
+      requests:
+        cpu: 500m
+        memory: 256Mi
+
+# 7. 数据库与 Redis 维持基础运行
+postgresql:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+redis:
+  master:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
