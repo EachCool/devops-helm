@@ -1,0 +1,15 @@
+services:
+  jenkins:
+    image: 'jenkins/jenkins:2.549-jdk25'
+    container_name: 'jenkins'
+    restart: always
+    user: '1000'
+    group_add:
+      - '110'
+    ports:
+      - '8080:8080'
+      - '50000:50000'
+    volumes:
+      - './data:/var/jenkins_home'
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - '/etc/docker/daemon.json:/etc/docker/daemon.json'
