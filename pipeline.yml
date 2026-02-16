@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: java-project
+  name: java-deployment
+  labels:
+    app: java-pipeline
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: java-pipeline
+  template:
+    metadata:
+      labels:
+        app: java-pipeline
+    spec:
+      imagePullSecrets:
+      - name: java-registry-key
+      containers:
+      - name: java-pipeline
+        image: 192.168.31.119/repo/java-pipeline:v1.0.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: java-project
+  name: java-service
+  labels:
+    app: java-pipeline
+spec:
+  type: ClusterIP
+  selector:
+    app: java-pipeline
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: java-project
+  name: java-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: minikube.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: java-service
+            port:
+              number: 8080
